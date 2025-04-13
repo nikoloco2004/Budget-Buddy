@@ -44,7 +44,7 @@ const BudgetChart = ({ data }) => {
         legend: {
             position: 'bottom',
             labels: {
-              color: '#000', // white text
+              color: '#fff', // white text
               font: {
                 size: 14,
                 weight: 'bold'

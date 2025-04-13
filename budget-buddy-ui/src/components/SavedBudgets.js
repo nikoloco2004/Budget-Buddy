@@ -23,7 +23,7 @@ const SavedBudgets = ({ onLoadBudget }) => {
             padding: "1rem",
             marginBottom: "1rem",
             backgroundColor: "transparent",
-            color: "#000000"
+            color: "#FFF"
           }}>
             <h3>📌 {budget.name || "Unnamed Budget"}</h3>
             <strong>🕒 {new Date(budget.timestamp).toLocaleString()}</strong>

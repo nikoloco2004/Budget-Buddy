@@ -3,33 +3,37 @@ import React from 'react';
 const styles = {
   container: {
     padding: '2rem',
-    fontFamily: 'sans-serif',
-    background: 'Transparent',
-    color: '#000000',
+    fontFamily: 'Helvetica, Arial, sans-serif',
+    background: 'transparent',
+    color: '#000',
+  },
+  card: {
+    textAlign: 'center',
+    margin: '2rem auto',
+    fontSize: "0.9rem",
+    maxWidth: '600px', // keeps it from stretching too far
   },
   table: {
-    width: '100%',
+    width: '60%',
     borderCollapse: 'collapse',
-    marginBottom: '2rem',
+    margin: '2rem auto',
+    backgroundColor: 'transparent',
   },
   thtd: {
-    border: '1px solid #444',
-    padding: '0.75rem',
+    border: '1px solid #666',
+    padding: '0.5rem 1rem',
     textAlign: 'left',
+    color: '#fff',
+    fontWeight: 'normal',
+    fontFamily: 'Open Sans, sans-serif',
   },
-  formSection: {
-    background: '#2d2d3f',
-    padding: '1rem',
-    borderRadius: '10px',
-  },
-  input: {
-    margin: '0.5rem 0',
-    padding: '0.5rem',
-    width: '100%',
-    borderRadius: '5px',
-    border: '1px solid #ccc',
-  }
+  stripedRow: (index) => ({
+    backgroundColor: index % 2 === 0 ? '#1a1a1a' : '#2a2a2a',
+  }),
+  // ... other styles
 };
+
+
 
 const BudgetDashboard = ({ layoutData }) => {
     const elements = layoutData?.ui?.components?.filter(c => c.type.toLowerCase() !== 'form');
@@ -59,7 +63,19 @@ const BudgetDashboard = ({ layoutData }) => {
           case 'table':
             return (
               <div key={index}>
-                <h2>{component.title}</h2>
+                <h2
+  style={{
+    fontFamily: "Helvetica, Arial, sans-serif",
+    fontWeight: "bold",
+    fontSize: "1.3rem",
+    textAlign: "center", // 👈 center the heading
+    marginTop: "2rem",
+    color: "#fff"
+  }}
+>
+  {component.title}
+</h2>
+
                 <table style={styles.table}>
                   <thead>
                     <tr>

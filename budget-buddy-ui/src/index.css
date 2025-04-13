@@ -1,3 +1,23 @@
+/* Reset default margin/padding */
+/* index.css */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: transparent;
+}
+#root {
+  margin: 0;
+  padding: 0;
+}
+body {
+  overflow-x: hidden;
+}
+* {
+  box-sizing: border-box;
+}
+
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
