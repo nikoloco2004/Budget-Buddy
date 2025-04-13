@@ -37,7 +37,7 @@ function App() {
   src="/2.png"
   alt="Top Left Logo"
   style={{
-    position: "fixed",
+    position: "scroll",
     top: "10px",
     left: "10px",
     width: "60px",
@@ -53,7 +53,7 @@ function App() {
           backgroundImage: "url('/2.png')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
-          backgroundAttachment: "fixed",
+          backgroundAttachment: "scroll",
           backgroundPosition: "center 0%", // 👈 pushed lower
           minHeight: "100vh",
           paddingTop: "100px",              // 👈 optional content push
@@ -586,12 +586,30 @@ function App() {
       style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem", color:"#000" }}
     />
     <button
-  onClick
+  onClick={async () => {
+    const timestamp = new Date().toISOString();
+
+    const res = await fetch("http://localhost:3000/save-budget", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        income,
+        expenses,
+        customCategories,
+        finalBudget: secondLayout.categories,
+        timestamp,
+        budgetName
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert("✅ Budget saved to MongoDB!");
+    } else {
+      alert("❌ Failed to save budget.");
+    }
+  }}
   style={{
-    display: "flex",
-  justifyContent: "center", // optional: centers the row
-  gap: "1.5rem",             // 👈 controls spacing between buttons
-  marginTop: "1.5rem",
     backgroundColor: "transparent",
     color: "#fff",
     fontFamily: "Helvetica, Arial, sans-serif",
@@ -603,20 +621,22 @@ function App() {
     boxShadow: "0 0 16px rgba(255, 255, 255, 0.35)",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    minWidth: "150px"  // Ensures consistent width like "Export PDF"
-  }
-  }
+    minWidth: "150px",
+    marginRight: "1rem" // spacing from adjacent "Refine" button
+  }}
   onMouseOver={(e) => {
     e.target.style.boxShadow = "0 0 28px rgba(255, 255, 255, 0.5)";
     e.target.style.transform = "scale(1.03)";
   }}
   onMouseOut={(e) => {
-    e.target.style.boxShadow = "0 0 18px rgba(255, 255, 255, 0.3)";
+    e.target.style.boxShadow = "0 0 16px rgba(255, 255, 255, 0.35)";
     e.target.style.transform = "scale(1)";
   }}
 >
   Accept Budget
 </button>
+
+
 
 
 
@@ -638,13 +658,9 @@ function App() {
     borderRadius: "8px",
     border: "2px solid #fff",
     boxShadow: "0 0 16px rgba(255, 255, 255, 0.35)",
-    cursor: "pointer",
-    transform: "translate(320px, -70px)",   // permanent shift
+    cursor: "pointer",   // permanent shift
     transition: "none",
-    minWidth: "150px",  // Ensures consistent width like "Export PDF"
-    position: "absolute",
-    top: "2837px",
-    left: "845px",
+    minWidth: "150px",  // Ensures consistent width like "Export PDF",
   }
   }
   onMouseOver={(e) => {
