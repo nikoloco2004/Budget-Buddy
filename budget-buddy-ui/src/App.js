@@ -183,7 +183,115 @@ function App() {
         </tbody>
       </table>
       {/* ✅ Chart Below the Table */}
-      <BudgetChart data={secondLayout.categories} />
+        <BudgetChart data={secondLayout.categories} />
+
+      <button
+        style={{
+          marginTop: "1rem",
+          backgroundColor: "#007bff",
+          color: "#fff",
+          padding: "0.5rem 1rem",
+          borderRadius: "6px",
+          cursor: "pointer"
+        }}
+        onClick={() => {
+          const { jsPDF } = require("jspdf");
+          const doc = new jsPDF();
+        
+          doc.setFontSize(18);
+          doc.text("Budget Buddy Report", 14, 20);
+        
+          let y = 30;
+        
+          // 💰 Income
+          doc.setFontSize(14);
+          doc.text(`Income: $${income}`, 14, y);
+          y += 10;
+        
+          // 💸 Expenses
+          doc.setFontSize(14);
+          doc.text("Expenses:", 14, y);
+          y += 8;
+          doc.setFontSize(12);
+          expenses.forEach((e) => {
+            doc.text(`- ${e.category}: $${e.amount}`, 16, y);
+            y += 7;
+          });
+        
+          y += 5;
+        
+          // 🧾 Custom Categories
+          if (customCategories.length > 0) {
+            doc.setFontSize(14);
+            doc.text("Custom Budget Categories:", 14, y);
+            y += 8;
+            doc.setFontSize(12);
+            customCategories.forEach((cat) => {
+              doc.text(`- ${cat}`, 16, y);
+              y += 7;
+            });
+            y += 5;
+          }
+        
+          // 📊 Suggested Budget
+          if (secondLayout?.categories?.length) {
+            doc.setFontSize(14);
+            doc.text("Gemini Suggested Allocation:", 14, y);
+            y += 8;
+            doc.setFontSize(12);
+            secondLayout.categories.forEach((cat) => {
+              doc.text(`- ${cat.name}: $${cat.suggestedAmount}`, 16, y);
+              y += 7;
+            });
+          }
+        
+          // 📋 Summary
+          if (secondLayout?.summary) {
+            y += 10;
+            doc.setFontSize(14);
+            doc.text("Summary:", 14, y);
+            y += 8;
+            doc.setFontSize(12);
+            doc.text(doc.splitTextToSize(secondLayout.summary, 180), 14, y);
+            y += doc.splitTextToSize(secondLayout.summary, 180).length * 7;
+          }
+        
+          // 💬 Notes
+          if (secondLayout?.notes) {
+            y += 10;
+            doc.setFontSize(14);
+            doc.text("Notes:", 14, y);
+            y += 8;
+            doc.setFontSize(12);
+            doc.text(doc.splitTextToSize(secondLayout.notes, 180), 14, y);
+          }
+          // 📊 Gemini Suggested Budget (with percentages)
+          if (secondLayout?.categories?.length) {
+            doc.setFontSize(14);
+            y += 20; // 👈 Add space below the previous section
+            doc.setFontSize(14);
+            doc.text("Gemini Suggested Budget:", 14, y);
+            y += 8;
+
+            doc.setFontSize(12);
+
+            const total = secondLayout.categories.reduce((sum, cat) => sum + cat.suggestedAmount, 0);
+
+            secondLayout.categories.forEach((cat) => {
+              const percent = ((cat.suggestedAmount / total) * 100).toFixed(1);
+              const line = `- ${cat.name}: $${cat.suggestedAmount} (${percent}%)`;
+              doc.text(line, 16, y);
+              y += 7;
+            });
+          }
+
+          // 🧾 Save it
+          doc.save("budget-buddy-report.pdf");
+        }}        
+      >
+        📥 Export as PDF
+      </button>
+
     <div style={{ marginTop: "1rem" }}>
     <h3>📝 Name This Budget</h3>
     <input
