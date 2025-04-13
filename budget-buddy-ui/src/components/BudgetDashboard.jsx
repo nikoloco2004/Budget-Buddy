@@ -4,16 +4,8 @@ const styles = {
   container: {
     padding: '2rem',
     fontFamily: 'sans-serif',
-    background: '#1e1e2f',
-    color: '#fff',
-  },
-  card: {
-    background: `url('/img/card-bg.jpg') no-repeat center center / cover`,
-    padding: '1rem',
-    borderRadius: '12px',
-    marginBottom: '1rem',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-    color: '#fff',
+    background: 'Transparent',
+    color: '#000000',
   },
   table: {
     width: '100%',

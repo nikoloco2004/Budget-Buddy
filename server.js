@@ -126,6 +126,63 @@ ${JSON.stringify(req.body.expenses, null, 2)}
   }
 }
 
+app.post('/ai/refine-budget', async (req, res) => {
+  const { income, expenses, customCategories, feedbackText } = req.body;
+
+  const prompt = `
+  You are a zero-based budgeting assistant.
+  
+  The user has already added income and recurring expenses. Now they want to divide the remaining balance into specific budget categories.
+  Just make sure when dividing the funds that the allocations make logical sense as a financial advisor. Ensure each category has some amount of money allocated to it.
+  
+  Here's the data:
+  - Income: $${income}
+  - Expenses: ${JSON.stringify(expenses, null, 2)}
+  - Suggested Categories: ${JSON.stringify(customCategories)}
+  
+  ${
+    feedbackText
+      ? `The user provided feedback on the previous suggestion:\n"${feedbackText}"`
+      : ''
+  }
+  
+  Respond ONLY with clean JSON in this format:
+  {
+    "categories": [
+      { "name": "Emergency Fund", "suggestedAmount": 100 },
+      { "name": "Savings", "suggestedAmount": 200 }
+    ],
+    "summary": "Here's a breakdown of how to allocate the remaining funds.",
+    "notes": "You can adjust these allocations monthly based on changing needs."
+  }
+  You may include a "notes" field with extra financial guidance or warnings for the user.
+  `;  
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      })
+    });    
+
+    const data = await response.json();
+    console.log("📦 Refined Gemini response:", JSON.stringify(data, null, 2));
+    res.json({
+      response: data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini"
+    });    
+  } catch (err) {
+    console.error("❌ Gemini refine-budget error:", err.message);
+    res.status(500).json({ error: "Gemini refine-budget call failed" });
+  }
+});
+
+
 startServer();
 
 
