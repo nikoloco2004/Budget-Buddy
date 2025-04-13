@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import BudgetDashboard from './components/BudgetDashboard';
+import SavedBudgets from './components/SavedBudgets';
+import BudgetChart from './components/BudgetChart';
+
+
 
 function App() {
   const [layoutData, setLayoutData] = useState(null);
@@ -12,9 +16,20 @@ function App() {
   const [secondLayout, setSecondLayout] = useState(null);
   const [showFeedbackBox, setShowFeedbackBox] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
-  const [refinedLayout, setRefinedLayout] = useState(null); // optional 3rd layer
+  const [showSavedBudgets, setShowSavedBudgets] = useState(false);
+  const [budgetName, setBudgetName] = useState('');
 
-
+  const handleLoadBudget = (budget) => {
+    setIncome(budget.income);
+    setExpenses(budget.expenses || []);
+    setCustomCategories(budget.customCategories || []);
+    setLayoutData(null);      // 🧽 Clear initial Gemini layout (Dashboard UI)
+    setSecondLayout(null);    // 🧽 Clear refined AI budget suggestion
+    setFeedbackText('');      // 🧽 Clear feedback textbox
+    setShowFeedbackBox(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
 
 
 
@@ -23,6 +38,7 @@ function App() {
       <h1 style={{ textAlign: 'center' }}>💰 Budget Buddy</h1>
       
       <div style={{ padding: "1rem", maxWidth: "500px", margin: "auto" }}>
+        {/* This section displays will contain lnading page */} 
         <h2>💼 Monthly Income</h2>
         <input
           type="number"
@@ -145,36 +161,67 @@ function App() {
     </button>
   </div>
 )}
-{secondLayout && secondLayout.categories && (
-  <div style={{ padding: "1rem", maxWidth: "500px", margin: "auto" }}>
-    <h2>🧠 Gemini's Suggested Budget</h2>
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr>
-          <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Category</th>
-          <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Amount ($)</th>
-        </tr>
-      </thead>
-      <tbody>
-      {[...secondLayout.categories]
-      .sort((a, b) => b.suggestedAmount - a.suggestedAmount)
-      .map((cat, i) => (
-          <tr key={i}>
-            <td style={{ padding: "0.5rem 0" }}>{cat.name}</td>
-            <td>${cat.suggestedAmount}</td>
+  {secondLayout && secondLayout.categories && (
+    <div style={{ padding: "1rem", maxWidth: "500px", margin: "auto" }}>
+      <h2>🧠 Gemini's Suggested Budget</h2>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Category</th>
+            <th style={{ borderBottom: "1px solid #ccc", textAlign: "left" }}>Amount ($)</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {[...secondLayout.categories]
+            .sort((a, b) => b.suggestedAmount - a.suggestedAmount)
+            .map((cat, i) => (
+              <tr key={i}>
+                <td style={{ padding: "0.5rem 0" }}>{cat.name}</td>
+                <td>${cat.suggestedAmount}</td>
+              </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* ✅ Chart Below the Table */}
+      <BudgetChart data={secondLayout.categories} />
     <div style={{ marginTop: "1rem" }}>
-  <button
-    onClick={() => {
-      alert("👍 Great! Budget accepted.");
-    }}
-    style={{ marginRight: "1rem" }}
-  >
-    ✅ Accept Budget
-  </button>
+    <h3>📝 Name This Budget</h3>
+    <input
+      type="text"
+      placeholder="e.g. April Budget, Summer Plan"
+      value={budgetName}
+      onChange={(e) => setBudgetName(e.target.value)}
+      style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
+    />
+    <button
+      onClick={async () => {
+        const timestamp = new Date().toISOString();
+
+        const res = await fetch("http://localhost:3000/save-budget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            income,
+            expenses,
+            customCategories,
+            finalBudget: secondLayout.categories,
+            timestamp,
+            budgetName
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ Budget saved to MongoDB!");
+        } else {
+          alert("❌ Failed to save budget.");
+        }
+      }}
+      style={{ marginRight: "1rem" }}
+    >
+      ✅ Accept Budget
+</button>
+
   <button
     onClick={() => {
       setShowFeedbackBox(true); // we’ll create this state next
@@ -241,12 +288,20 @@ function App() {
       </div>
     )}
   </div>
+  
 )}
+    </div>
+      </div>
+    )}
+        <div style={{ textAlign: "center", marginRight: "1rem" }}>
+      <button
+        onClick={() => setShowSavedBudgets(!showSavedBudgets)}
+      >
+        {showSavedBudgets ? "📕 Hide Saved Budgets" : "📂 View Saved Budgets"}
+      </button>
+    </div>
 
-
-</div>
-  </div>
-)}
+    {showSavedBudgets && <SavedBudgets onLoadBudget={handleLoadBudget} />}
     </div>
   );
 }

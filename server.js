@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
 const fetch = require('node-fetch'); // if needed
+const { ObjectId } = require('mongodb');
 
 const app = express();
 app.use(cors());
@@ -180,9 +181,58 @@ app.post('/ai/refine-budget', async (req, res) => {
     console.error("❌ Gemini refine-budget error:", err.message);
     res.status(500).json({ error: "Gemini refine-budget call failed" });
   }
+});  
+app.post('/save-budget', async (req, res) => {
+  const { income, expenses, customCategories, finalBudget, timestamp, budgetName } = req.body;
+
+  try {
+    const db = client.db("budgetbuddy");
+    const saved = db.collection("saved_budgets");
+
+    const result = await saved.insertOne({
+      name: budgetName || "Unnamed Budget",
+      income,
+      expenses,
+      customCategories,
+      finalBudget,
+      timestamp: timestamp || new Date().toISOString()
+    });      
+
+    res.json({ success: true, savedId: result.insertedId });
+  } catch (err) {
+    console.error("❌ Failed to save budget:", err);
+    res.status(500).json({ error: "Failed to save budget" });
+  }
+  app.get('/saved-budgets', async (req, res) => {
+    try {
+      const db = client.db("budgetbuddy");
+      const saved = db.collection("saved_budgets");
+  
+      const budgets = await saved.find().sort({ timestamp: -1 }).toArray();
+      res.json(budgets);
+    } catch (err) {
+      console.error("❌ Failed to fetch saved budgets:", err);
+      res.status(500).json({ error: "Failed to fetch budgets" });
+    }
+  });    
 });
+app.delete('/delete-budget/:id', async (req, res) => {
+  try {
+    const db = client.db("budgetbuddy");
+    const saved = db.collection("saved_budgets");
+    console.log("🗑️ Deleting budget with ID:", req.params.id);
+    const result = await saved.deleteOne({ _id: new ObjectId(req.params.id) });
 
-
+    if (result.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: "Budget not found" });
+    }
+  } catch (err) {
+    console.error("❌ Failed to delete budget:", err);
+    res.status(500).json({ error: "Failed to delete budget" });
+  }
+});
 startServer();
 
 
